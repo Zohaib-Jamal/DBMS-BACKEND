@@ -23,7 +23,7 @@ GO
 
 --Check if TCP/IP is enabled on PORT 1433
 --And SQL Login is allowed
---After changing any settings restart server
+--After changing any settings restart SQL server
 ```
 
 ## Run Server
