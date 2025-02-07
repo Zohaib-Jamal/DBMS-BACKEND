@@ -4,7 +4,7 @@
 npm i
 ```
 
-## Mondify config in db.js
+## Modify config in db.js
 
 ## Run Server
 ```bash
