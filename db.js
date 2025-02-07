@@ -1,0 +1,29 @@
+const sql = require("mssql");
+
+const config = {
+  server: "DESKTOP-D1OATJQ",
+  database: "DB_EXPRESS",
+  port: 1433,
+  options: {
+    trustServerCertificate: true,
+    enableArithAbort: true,
+  },
+  user: "express_user",
+  password: "expresspass",
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000,
+  },
+};
+
+async function connectDB() {
+  try {
+    await sql.connect(config);
+    console.log("Connected to SQL Server!");
+  } catch (err) {
+    console.error("Database connection failed:", err);
+  }
+}
+
+module.exports = { sql, connectDB };
