@@ -1,12 +1,12 @@
-Download All Dependencies
+## Download All Dependencies
 
 ```bash
 npm i
 ```
 
-Mondify config in db.js
+## Mondify config in db.js
 
-Run Server
+## Run Server
 ```bash
 npm run dev
 ```
