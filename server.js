@@ -1,12 +1,19 @@
 const express = require("express");
 const { sql, connectDB } = require("./db");
+const cors = require("cors");
 const app = express();
 const port = 3000;
+
+
+app.use(cors());
+
+connectDB();
 
 app.get("/", (req, res) => {
   res.send("Express + Nodemon Server");
 });
-connectDB();
+
+
 app.get("/users", async (req, res) => {
   try {
     const result = await sql.query("SELECT * FROM Users");
