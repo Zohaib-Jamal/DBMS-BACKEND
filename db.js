@@ -1,5 +1,5 @@
 const sql = require("mssql");
-/*
+
 const config = {
   server: "DESKTOP-D1OATJQ",
   database: "DB_EXPRESS",
@@ -15,8 +15,8 @@ const config = {
     min: 0,
     idleTimeoutMillis: 30000,
   },
-};*/
-
+};
+/*
 const config = {
   server: "92.113.25.36",
   database: "DB_EXPRESS",
@@ -36,7 +36,7 @@ const config = {
     idleTimeoutMillis: 30000,
   },
 };
-
+*/
 async function connectDB() {
   try {
     await sql.connect(config);
@@ -46,4 +46,24 @@ async function connectDB() {
   }
 }
 
-module.exports = { sql, connectDB };
+const createUser = async (data) => {
+  try {
+    let snap = await sql.query(
+      `SELECT USERNAME FROM USERS WHERE USERNAME = '${data.username}'`
+    );
+
+    if (snap.recordset.length > 0) {
+      console.log(snap.recordset);
+      throw new Error("User alreasy exists");
+    }
+
+    await sql.query(
+      `INSERT INTO USERS VALUES('${data.username}',  '${data.password}')`
+    );
+    console.log("user inserted");
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
+module.exports = { sql, connectDB, createUser };

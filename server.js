@@ -1,26 +1,25 @@
 const express = require("express");
-const { sql, connectDB } = require("./db");
+const { sql, connectDB, createUser } = require("./db");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const app = express();
 const port = 3000;
 
-
 app.use(cors());
-
+app.use(bodyParser.json());
 connectDB();
 
-app.get("/", (req, res) => {
-  res.send("Express + Nodemon Server");
-});
+app.post("/login", async (req, res) => {
+  const data = req.body;
 
-
-app.get("/users", async (req, res) => {
-  try {
-    const result = await sql.query("SELECT * FROM Users");
-    res.json(result.recordset);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  if (!data.username || !data.password) {
+    res.status(400).send("Invalid req");
   }
+
+  console.log("username", data.username);
+  console.log("password", data.password);
+
+  await createUser(data);
 });
 
 app.listen(port, () => {
