@@ -1,5 +1,6 @@
 const sql = require("mssql");
-
+require("dotenv").config();
+/*
 const config = {
   server: "DESKTOP-D1OATJQ",
   database: "DB_EXPRESS",
@@ -16,11 +17,11 @@ const config = {
     idleTimeoutMillis: 30000,
   },
 };
-/*
+*/
 const config = {
-  server: "92.113.25.36",
-  database: "DB_EXPRESS",
-  port: 1433,
+  server: process.env.SERVER_IP,
+  database: process.env.DATABASE_NAME,
+  port: Number(process.env.PORT),
   authentication: {
     type: "default",
   },
@@ -28,15 +29,15 @@ const config = {
     encrypt: false,
     trustServerCertificate: true,
   },
-  user: "express_user",
-  password: "Expresspass1",
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
   pool: {
     max: 10,
     min: 0,
     idleTimeoutMillis: 30000,
   },
 };
-*/
+
 async function connectDB() {
   try {
     await sql.connect(config);
