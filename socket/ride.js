@@ -1,0 +1,110 @@
+const { io } = require("../server")
+const { createRide,
+  cancelRide,
+  completeRide,
+  getRideData, } = require("../db/ride")
+
+let users = {};
+let drivers = {};
+let activeRides = {};
+
+//io.on(",", (socket)=>{})
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("registerUser", (id, role) => {
+    if (role === "driver") {
+      drivers[id] = socket.id;
+    } else {
+      users[id] = socket.id;
+    }
+    console.log("Users:", users);
+    console.log("Drivers:", drivers);
+  });
+
+
+  socket.on("createRide", (rideData) => {
+    const { userID, pickup, destination } = rideData;
+    activeRides[userID] = { userID, pickup, destination, status: "waiting" };
+
+
+    Object.values(drivers).forEach((driverSocketId) => {
+      io.to(driverSocketId).emit("newRideRequest", activeRides[userID]);
+    });
+
+    console.log("Ride request sent to drivers:", activeRides[userID]);
+  });
+
+
+
+  socket.on("acceptRide", async ({ userID, driverID, departure, arrival, km }) => {
+    if (!activeRides[userID]) return;
+    try {
+      activeRides[userID].status = "accepted";
+      activeRides[userID].driverID = driverID;
+
+
+      io.to(users[userID]).emit("rideAccepted", activeRides[userID]);
+      io.to(drivers[driverID]).emit("rideAccepted", activeRides[userID]);
+      await createRide(userID, driverID, departure, arrival, km)
+    } catch (err) {
+
+    }
+  });
+
+
+  socket.on("cancelRide", async ({ userID, driverID, rideID }) => {
+    if (activeRides[userID]) {
+      try {
+        delete activeRides[userID];
+        io.to(users[userID]).emit("rideCancelled");
+        io.to(drivers[driverID]).emit("rideCancelled");
+        await cancelRide(rideID)
+      } catch (err) {
+
+      }
+    }
+  });
+
+
+  socket.on("completeRide", async ({ userID, driverID, rideID }) => {
+    try {
+      if (activeRides[userID]) {
+        const status = "completed"
+        delete activeRides[userID];
+
+        io.to(users[userID]).emit("rideCompleted", status);
+        io.to(drivers[driverID]).emit("rideCompleted", status);
+        await completeRide(rideID)
+      }
+    } catch (err) {
+
+    }
+  });
+
+
+  socket.on("getRideData", async (userID, rideId) => {
+    try {
+      if (activeRides[userID]) {
+        const data = await getRideData(rideId)
+        io.to(users[userID]).emit("rideData", data);
+      }
+    } catch (err) {
+
+    }
+  });
+
+
+  socket.on("disconnect", () => {
+    Object.keys(users).forEach((userID) => {
+      if (users[userID] === socket.id) delete users[userID];
+    });
+    Object.keys(drivers).forEach((driverID) => {
+      if (drivers[driverID] === socket.id) delete drivers[driverID];
+    });
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+
