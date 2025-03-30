@@ -6,13 +6,13 @@ const bcrypt = require("bcrypt");
 // Driver related functions
 const createDriver = async (data) => {
   try {
-    const { firstName, lastName, email, cnic, password, phoneNumber } = data;
+    const { firstName, lastName, email, cnic, password, phoneNumber, dob } = data;
     const driverId = uuidv4();
     const hash = bcrypt.hashSync(password, 10);
-    const snap = await sql.query(
-      `INSERT INTO Driver (DriverID, FirstName, LastName, Email, CNIC, Rating, Password, PhoneNumber ) 
+    await sql.query(
+      `INSERT INTO Driver (DriverID, FirstName, LastName, Email, CNIC, Rating, Password, PhoneNumber, DOB ) 
       VALUES 
-      ('${driverId}','${firstName}','${lastName}', '${email}', '${cnic}', NULL, '${password}','${phoneNumber}')`
+      ('${driverId}','${firstName}','${lastName}', '${email}', '${cnic}', NULL, '${hash}','${phoneNumber}', '${dob}')`
     );
     return { firstName, lastName, driverId };
   } catch (err) {
@@ -20,7 +20,7 @@ const createDriver = async (data) => {
     if (err.number === 2627) {
       throw new Error("Driver already exists.");
     }
-    throw new Error(err);
+    throw new Error(err.message);
   }
 };
 
@@ -28,13 +28,14 @@ const getDriver = async (data) => {
   try {
     const { driverID } = data;
     const snap = await sql.query(
-      `SELECT * FROM Driver WHERE DriverID = '${driverID}'`
+      `SELECT DriverId, firstName, lastName, rating, phoneNumber, email, dob  FROM Driver WHERE DriverID = '${driverID}'`
     );
     const driverdata = snap.recordset[0];
-    if (!driverdata) return false;
+    if (!driverdata) throw new Error("Could not Find Driver");
     else return driverdata;
-  } catch (Err) {
-    throw new Error("Error: Could not Find Driver");
+  } catch (err) {
+
+    throw new Error(err.message);
   }
 };
 
@@ -44,13 +45,13 @@ const checkDriver = async (data) => {
     const snap = await sql.query(
       `SELECT 1 FROM Driver WHERE DriverID = '${driverID}'`
     );
-    return snap.recordset.length !== 0; // Returns true if found, else false
+    return snap.recordset.length !== 0;
   } catch (Err) {
     throw new Error("Error: Could not Find Driver");
   }
 };
 
-const loginDriver = async (data) => {
+const loginDriverPhone = async (data) => {
   try {
     const { phoneNumber, password } = data;
     const snap = await sql.query(
@@ -59,7 +60,7 @@ const loginDriver = async (data) => {
     console.log(snap);
     if (!snap.recordset[0]) throw new Error("No record found!");
     const driverData = snap.recordset[0];
-    const correct = await bcrypt.compareSync(password, driverData.password);
+    const correct = await bcrypt.compareSync(password, driverData.Password);
     if (!correct) throw new Error("Wrong Password");
 
     return driverData;
@@ -68,16 +69,34 @@ const loginDriver = async (data) => {
   }
 };
 
+const loginDriverEmail = async (data) => {
+  try {
+    const { email, password } = data;
+    const snap = await sql.query(
+      `SELECT * FROM DRIVER WHERE email = '${email}'`
+    );
+    console.log(snap);
+    if (!snap.recordset[0]) throw new Error("No record found!");
+    const driverData = snap.recordset[0];
+    const correct = await bcrypt.compareSync(password, driverData.Password);
+    if (!correct) throw new Error("Wrong Password");
+
+    return driverData;
+  } catch (err) {
+    throw Error(err.message);
+  }
+};
+
 const ChangeDrivername = async (data) => {
   try {
     const { firstName, lastName, driverID } = data;
 
     const snap = await sql.query(
-      `UPDATE USERS SET FIRSTNAME = ${firstName} , LASTNAME = ${lastName} WHERE DRIVERID = ${driverID}`
+      `UPDATE DRIVER SET FIRSTNAME = '${firstName}' , LASTNAME = '${lastName}' WHERE DRIVERID = '${driverID}'`
     );
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 
@@ -86,11 +105,11 @@ const ChangeDriverPhoneNo = async (data) => {
     const { phoneNumber, driverID } = data;
 
     const snap = await sql.query(
-      `UPDATE USERS SET PHONENUMBER = ${phoneNumber} WHERE DRIVERID = ${driverID}`
+      `UPDATE DRIVER SET PHONENUMBER = '${phoneNumber}' WHERE DRIVERID = '${driverID}'`
     );
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 
@@ -99,11 +118,11 @@ const ChangeDriverPassword = async (data) => {
     const { password, driverID } = data;
     const hash = bcrypt.hashSync(password, 10);
     const snap = await sql.query(
-      `UPDATE DRIVER SET Pass = ${hash} WHERE DRIVERID = ${driverID}`
+      `UPDATE DRIVER SET Password = '${hash}' WHERE DRIVERID = '${driverID}'`
     );
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 
@@ -112,18 +131,21 @@ const GetDriverHistory = async (data) => {
     const { driverID } = data;
     const snap = await sql.query(
       `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, Rating
-      FROM Ride where DriverID = ${driverID}`
+      FROM Ride where DriverID = '${driverID}'`
     );
-    return snap;
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset;
   } catch (Err) {
-    console.log("Error: ", Err);
-    throw new Error(Err);
+
+    throw new Error(Err.message);
   }
 };
 
 module.exports = {
   createDriver,
-  loginDriver,
+  loginDriverEmail,
+  loginDriverPhone,
   ChangeDrivername,
   ChangeDriverPhoneNo,
   ChangeDriverPassword,

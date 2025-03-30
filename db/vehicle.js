@@ -10,6 +10,9 @@ const createVehicle = async (data) => {
     );
     console.log(snap);
   } catch (Err) {
+    if (Err.number === 2627) {
+      throw new Error("Vehicle already exists.");
+    }
     throw new Error("Error: Could not Register Vehicle");
   }
 };
@@ -17,11 +20,13 @@ const createVehicle = async (data) => {
 const getVehicle = async (data) => {
   try {
     const { vehicleID } = data;
-    
+
     const snap = await sql.query(
       `SELECT * FROM Vehicle WHERE ${vehicleID} = VehicleID`
     );
-    return snap;
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset;
   } catch (Err) {
     throw new Error("Error: Could not Find Vehicle");
   }

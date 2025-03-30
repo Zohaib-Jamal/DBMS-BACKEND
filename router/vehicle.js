@@ -29,7 +29,8 @@ router.get("/details", async (req, res) => {
     const data = await getVehicle(data);
     res.status(200).send({ message: "Driver Details Received", data: data });
   } catch (err) {
-    console.log(err);
+    if (err.message === "No record found!")
+      return res.status(404).send({ message: err.message, data: null });
     res
       .status(500)
       .send({ message: "Driver Details Req Failed!", data: null });

@@ -22,7 +22,7 @@ const loginUser = async (data) => {
   }
 };
 
-// User related functions
+
 const createUser = async (data) => {
   try {
     console.log(data)
@@ -38,7 +38,7 @@ const createUser = async (data) => {
     if (err.number === 2627) {
       throw new Error("User already exists.");
     }
-    throw new Error(err);
+    throw new Error(err.message);
   }
 };
 
@@ -47,11 +47,11 @@ const ChangeUsername = async (data) => {
     const { firstName, lastName, userId } = data;
 
     const snap = await sql.query(
-      `UPDATE USERS SET FIRSTNAME = ${firstName} , LASTNAME = ${lastName} WHERE USERID = ${userId}`
+      `UPDATE USERS SET FIRSTNAME = '${firstName}' , LASTNAME = '${lastName}' WHERE USERID = '${userId}'`
     );
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 
@@ -59,12 +59,12 @@ const ChangeUserPhoneNo = async (data) => {
   try {
     const { phoneNumber, userId } = data;
 
-    const snap = await sql.query(
-      `UPDATE USERS SET PHONENUMBER = ${phoneNumber} WHERE USERID = ${userId}`
+    await sql.query(
+      `UPDATE USERS SET PHONENUMBER = '${phoneNumber}' WHERE USERID = '${userId}'`
     );
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 
@@ -72,13 +72,15 @@ const GetUserRides = async (data) => {
   try {
     const { userId } = data;
     const snap = await sql.query(
-      `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, Rating
-      FROM Ride where PassengerID = ${userId}`
+      `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate
+      FROM Ride where PassengerID = '${userId}'`
     );
-    return snap;
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset;
   } catch (Err) {
-    console.log("Error: ", Err);
-    throw new Error(Err);
+
+    throw new Error(Err.message);
   }
 };
 
@@ -86,13 +88,19 @@ const GetUserBusses = async (data) => {
   try {
     const { userId } = data;
     const snap = await sql.query(
-      `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, SeatNumber
-      FROM Ride R JOIN BusSeat BS R.JourneyID = BS.JourneyID where PassengerID = ${userId}`
+      `SELECT B.JourneyID, DepartureLocation, ArrivalLocation, 
+      Fare, StartTime, SeatNumber, Status, BusID
+      FROM BusJourney B 
+      JOIN BusSeat BS 
+      ON B.JourneyID = BS.JourneyID 
+      where PassengerID = '${userId}'`
     );
-    return snap;
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset;
   } catch (Err) {
-    console.log("Error: ", Err);
-    throw new Error(Err);
+
+    throw new Error(Err.message);
   }
 };
 
@@ -100,12 +108,13 @@ const ChangeUserPassword = async (data) => {
   try {
     const { password, userID } = data;
     const hash = bcrypt.hashSync(password, 10);
-    const snap = await sql.query(
-      `UPDATE DRIVERS SET Pass = ${hash} WHERE DRIVERID = ${userID}`
+    await sql.query(
+      `UPDATE USERS SET Password = '${hash}' WHERE USERID = '${userID}'`
     );
+
   } catch (Err) {
     console.log("Error: ", Err);
-    throw new Error(Err);
+    throw new Error(Err.message);
   }
 };
 

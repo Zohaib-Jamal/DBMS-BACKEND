@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const { createUser, loginUser } = require("../db/user.js");
-const { createDriver, loginDriver, createVehicle } = require("../db/driver.js");
+const { createDriver, loginDriverEmail, loginDriverPhone } = require("../db/driver.js");
 var jwt = require('jsonwebtoken');
 require("dotenv").config();
 const { validateToken } = require("../middleware/auth.js")
@@ -79,10 +79,13 @@ router.post("/user/login", async (req, res) => {
   }
 });
 
-router.post("/driver/login", async (req, res) => {
+router.post("/driver/login/email", async (req, res) => {
   try {
     const data = req.body;
-    const driverData = await loginDriver(data);
+    if (!data.email || !data.password) {
+      return res.status(400).send({ message: "Missing required fields" });
+    }
+    const driverData = await loginDriverEmail(data);
 
     const access_token = generateAccessToken(driverData.DriverID, "Driver")
     const refresh_token = generateRefreshToken(driverData.DriverID, "Driver")
@@ -97,9 +100,42 @@ router.post("/driver/login", async (req, res) => {
   }
 });
 
+router.post("/driver/login/phone", async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.phoneNumber || !data.password) {
+      return res.status(400).send({ message: "Missing required fields" });
+    }
+    const driverData = await loginDriverPhone(data);
+
+    const access_token = generateAccessToken(driverData.DriverID, "Driver")
+    const refresh_token = generateRefreshToken(driverData.DriverID, "Driver")
+
+    res
+      .cookie("refreshToken", refresh_token, { httpOnly: true })
+      .status(200).send({ message: "Login Successfull!", data: driverData, access_token });
+
+  } catch (err) {
+    console.log(err);
+    res.status(401).send({ message: "Login  Failed!", receivedData: null });
+  }
+});
+
+
 router.post("/driver/signup", async (req, res) => {
   try {
     const data = req.body;
+    if (
+      !data.firstName ||
+      !data.lastName ||
+      !data.email ||
+      !data.dob ||
+      !data.password ||
+      !data.phoneNumber ||
+      !data.cnic
+    ) {
+      return res.status(400).send({ message: "Missing required fields" });
+    }
     const driverData = await createDriver(data);
 
     const access_token = generateAccessToken(driverData.driverId, "Driver")
@@ -137,9 +173,11 @@ router.post("/create_vehicle", validateToken, async (req, res) => {
 });
 
 
-router.post("/refresh_token", async (req, res) => {
+router.get("/refresh_token", async (req, res) => {
   try {
+
     const refresh_token = req.cookies.refreshToken
+
     const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN)
     if (decoded) {
       const id = decoded.id;
@@ -152,6 +190,7 @@ router.post("/refresh_token", async (req, res) => {
       return res.status(403).json({ message: "Unauthorized" });
     }
   } catch (err) {
+
     res
       .status(500)
       .send({ message: "An Error Occured!" });

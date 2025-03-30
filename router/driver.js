@@ -5,6 +5,7 @@ const {
   ChangeDriverPhoneNo,
   ChangeDrivername,
   GetDriverHistory,
+  getDriver
 } = require("../db/driver.js");
 const { validateToken } = require("../middleware/auth.js")
 router.use(validateToken)
@@ -12,8 +13,8 @@ router.use(validateToken)
 router.put("/change/name", async (req, res) => {
   try {
     const data = req.body;
-
-    if (!data.FirstName || !data.LastName || !data.DriverID) {
+    data.driverID = req.id
+    if (!data.firstName || !data.lastName || !data.driverID) {
       return res.status(400).send({ message: "Missing required fields" });
     }
 
@@ -30,7 +31,7 @@ router.put("/change/name", async (req, res) => {
 router.put("/change/phone", async (req, res) => {
   try {
     const data = req.body;
-
+    data.driverID = req.id
     if (!data.phoneNumber || !data.driverID) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -48,7 +49,7 @@ router.put("/change/phone", async (req, res) => {
 router.put("/change/password", async (req, res) => {
   try {
     const data = req.body;
-
+    data.driverID = req.id
     if (!data.password || !data.driverID) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -63,12 +64,17 @@ router.put("/change/password", async (req, res) => {
   }
 });
 
-router.get("/driverDetails", async (req, res) => {
+router.get("/details", async (req, res) => {
   try {
-    const data = await GetDriverHistory(data);
-    res.status(200).send({ message: "Driver Data Received", data: data });
+    const data = { driverID: req.id }
+
+    const recievedData = await getDriver(data);
+    res.status(200).send({ message: "Driver Data Sent", data: recievedData });
   } catch (err) {
-    console.log(err);
+    if (err.message === "Could not Find Driver")
+      return res
+        .status(404)
+        .send({ message: err.message, data: null });
     res
       .status(500)
       .send({ message: "Data Req Failed!", data: null });
@@ -77,10 +83,14 @@ router.get("/driverDetails", async (req, res) => {
 
 router.get("/history", async (req, res) => {
   try {
-    const data = await GetDriverHistory(data);
-    res.status(200).send({ message: "History Received", data: data });
+    const data = { driverID: req.id }
+    const recievedData = await GetDriverHistory(data);
+    res.status(200).send({ message: "History Sent", data: recievedData });
   } catch (err) {
-    console.log(err);
+    if (err.message === "No record found!")
+      return res
+        .status(404)
+        .send({ message: err.message, data: null });
     res
       .status(500)
       .send({ message: "Data Req Failed!", data: null });

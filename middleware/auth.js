@@ -8,9 +8,13 @@ HEADERS{
 */
 const validateToken = async (req, res, next) => {
     try {
+        if (!req.headers.authorization) throw new Error("invalid token")
         const token = req.headers.authorization.split(" ")[1]
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN)
+
         if (decoded) {
+            req.id = decoded.id
+            req.role = decoded.role
             next()
         }
         else {
@@ -18,6 +22,10 @@ const validateToken = async (req, res, next) => {
         }
 
     } catch (err) {
+
+        if (err.message === "invalid token" || err.message === "jwt expired")
+            return res.status(403).json({ message: "Unauthorized" });
+        console.log(err)
         return res.status(500).json({ message: "An Error Occured" });
     }
 }

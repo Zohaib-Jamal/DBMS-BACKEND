@@ -1,38 +1,43 @@
 const { sql } = require("./config.js");
 
-const ReservationData = async (data) =>{
-    try{
-        const {userId} = data;
+const ReservationData = async (data) => {
+    try {
+        const { userId } = data;
         const snap = await sql.query(
             `SELECT SeatNumber, DepartureLocation, ArrivalLocation,StartTime, Fare From BusSeat BS
             JOIN BusJourney BJ ON BS.JourneyID = BJ.JourneyID
-            WHERE PassengerID = ${userId} and Status = 'Pending'`
-        ) 
-        if(!snap.recordset[0])
+            WHERE PassengerID = '${userId}' and Status = 'Pending'`
+        )
+        if (!snap.recordset[0])
             throw new Error("No record found!");
-        return snap;
+        return snap.recordset;
     }
-    catch(err) {
-        throw Error(err);
+    catch (err) {
+        throw Error(err.message);
     }
 }
 
 const ReserveSeat = async (data) => {
-  try {
-    const { journeyID, seatNumber, userId } = data;
-    const snap = await sql.query(
-      `INSERT INTO BusSeat (JourneyID,SeatNumber,PassengerID) VALUES (${journeyID},${seatNumber},${userId})`
-    );
-    console.log(snap);
-  } catch (err) {
-    console.log("Error: ", err);
-    throw new Error(err);
-  }
+    try {
+        console.log(data)
+        const { journeyID, seatNumber, userId } = data;
+        const snap = await sql.query(
+            `INSERT INTO BusSeat (JourneyID,SeatNumber,PassengerID) VALUES (${journeyID},${seatNumber},'${userId}')`
+        );
+        console.log(snap);
+    } catch (err) {
+
+        if (err.number === 547)
+            throw new Error("Journey does not Exists!");
+        else if (err.number === 2627)
+            throw new Error("Seat Already Booked!");
+        throw new Error("An Error Occured!");
+    }
 };
 
-const CancelSeat = async (data) =>{
+const CancelSeat = async (data) => {
     try {
-        const {seatID} = data;
+        const { seatID } = data;
         const snap = await sql.query(
             `DELETE FROM BusSeat where SeatID = ${seatID}`
         )
@@ -45,19 +50,19 @@ const CancelSeat = async (data) =>{
 }
 
 const AvailableSeats = async (data) => {
-    try{
-        const {journeyID} = data;
+    try {
+        const { journeyID } = data;
         const snap = await sql.query(
-            `SELECT num AS available_seat
-            FROM ( VALUES (1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12), (13), (14), (15), (16), (17), (18), (19), (20)) AS v(num)
-            WHERE num NOT IN ( SELECT seatnumber FROM busSeat WHERE JourneyID = ${journeyID})`
+            `EXEC getAvailableSeats @journey_id = ${journeyID}`
         )
-        if(!snap.recordset[0])
+        if (!snap.recordset[0])
             throw new Error("No record found!");
-        return snap;
+        if (snap.recordset[0].seat === 'Journey Does Not Exists!')
+            throw new Error('Journey Does Not Exists!');
+        return snap.recordset;
     }
-    catch(err) {
-        throw Error(err);
+    catch (err) {
+        throw new Error(err.message);
     }
 }
 

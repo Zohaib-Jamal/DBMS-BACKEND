@@ -11,19 +11,22 @@ router.use(validateToken)
 
 router.get("/reservations", async (req, res) => {
   try {
+    const data = { userId: req.id }
+    const recievedData = await ReservationData(data);
+    res.status(200).send({ message: "Reservations Sent", data: recievedData });
+  } catch (err) {
 
-    const data = await ReservationData(data);
-    res.status(200).send({ message: "Reservations Sent", data: data });
-  } catch {
-    console.log(err);
+    if (err.message === "No record found!")
+      return res.status(404).send({ message: err.message, data: null });
     res.status(500).send({ message: "Reservations Req failed!", data: null });
   }
 });
 
-router.post("/reserveSeat", async (req, res) => {
+router.post("/reserve", async (req, res) => {
   try {
     const data = req.body;
-    journeyID, seatNumber, userId
+    data.userId = req.id
+
     if (!data.journeyID || !data.seatNumber || !data.userId) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -31,21 +34,31 @@ router.post("/reserveSeat", async (req, res) => {
     await ReserveSeat(data);
 
     res.status(200).send({ message: "Seat Reserved" });
-  } catch {
-    console.log(err);
+  } catch (err) {
+    if (err.message === "Journey does not Exists!") {
+      return res
+        .status(404)
+        .send({ message: err.message, data: null });
+    }
+    else if (err.message === "Seat Already Booked!")
+      return res
+        .status(400)
+        .send({ message: err.message, data: null });
     res
       .status(500)
-      .send({ message: "Seat Reservation failed!", receivedData: null });
+      .send({ message: "Seat Reservation failed!", data: null });
   }
 });
 
-router.delete("/cancelSeat", async (req, res) => {
+router.delete("/cancel", async (req, res) => {
   try {
     const data = req.body;
+    if (!data.seatID)
+      return res.status(400).send({ message: "Missing required fields" });
     await CancelSeat(data);
 
-    req.status(200).send({ message: "Seat Unreserved" });
-  } catch {
+    res.status(200).send({ message: "Seat Unreserved" });
+  } catch (err) {
     console.log(err);
     res
       .status(500)
@@ -53,12 +66,20 @@ router.delete("/cancelSeat", async (req, res) => {
   }
 });
 
-router.get("/availableSeats", async (req, res) => {
+router.get("/available", async (req, res) => {
   try {
-    const data = await AvailableSeats(data);
-    req.status(200).send({ message: "Seats Sent", data: data });
-  } catch {
-    console.log(err);
+    const data = { journeyID: req.query.journeyID }
+    if (!data.journeyID)
+      return res.status(400).send({ message: "Missing required fields" });
+    const receivedData = await AvailableSeats(data);
+    res.status(200).send({ message: "Seats Sent", data: receivedData });
+  } catch (err) {
+
+    if (err.message === "Journey Does Not Exists!" || err.message === "No record found!")
+      return res
+        .status(404)
+        .send({ message: err.message, data: null });
+
     res.status(500).send({ message: "Seats Req failed!", data: null });
   }
 });
