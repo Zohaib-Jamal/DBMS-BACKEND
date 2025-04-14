@@ -7,6 +7,8 @@ const {
   AvailableSeats,
 } = require("../db/bus.js");
 const { validateToken } = require("../middleware/auth.js")
+
+
 router.use(validateToken)
 
 router.get("/reservations", async (req, res) => {

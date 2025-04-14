@@ -2,20 +2,24 @@
 const express = require("express");
 const router = express.Router();
 const { createUser, loginUser } = require("../db/user.js");
-const { createDriver, loginDriverEmail, loginDriverPhone } = require("../db/driver.js");
-var jwt = require('jsonwebtoken');
+const {
+  createDriver,
+  loginDriverEmail,
+  loginDriverPhone,
+} = require("../db/driver.js");
+var jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { validateToken } = require("../middleware/auth.js")
-
+const { validateToken } = require("../middleware/auth.js");
 
 const generateAccessToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.ACCESS_TOKEN, { expiresIn: "10m" })
-}
+  return jwt.sign({ id, role }, process.env.ACCESS_TOKEN, { expiresIn: "10m" });
+};
 
 const generateRefreshToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.REFRESH_TOKEN, { expiresIn: "30d" })
-}
-
+  return jwt.sign({ id, role }, process.env.REFRESH_TOKEN, {
+    expiresIn: "30d",
+  });
+};
 
 router.post("/user/signup", async (req, res) => {
   try {
@@ -35,13 +39,18 @@ router.post("/user/signup", async (req, res) => {
     console.log("data: ", data);
     const userid = await createUser(data);
 
-    const access_token = generateAccessToken(userid, "User")
-    const refresh_token = generateRefreshToken(userid, "User")
+    const access_token = generateAccessToken(userid, "User");
+    const refresh_token = generateRefreshToken(userid, "User");
 
+    
     res
-      .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200).send({ message: "Signup successful!", data, access_token });
-
+      .status(200)
+      .send({
+        message: "Signup successful!",
+        data,
+        access_token,
+        refresh_token,
+      });
   } catch (err) {
     if (err.message === "User already exists.") {
       return res
@@ -63,14 +72,10 @@ router.post("/user/login", async (req, res) => {
 
     const userData = await loginUser(data);
 
-    const access_token = generateAccessToken(userData.UserID, "User")
-    const refresh_token = generateRefreshToken(userData.UserID, "User")
+    const access_token = generateAccessToken(userData.UserID, "User");
+    const refresh_token = generateRefreshToken(userData.UserID, "User");
 
-    res
-      .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200).send({ message: "Login Successfull!", data: userData, access_token });
-
-
+    res.status(200).send({ message: "Login Successfull!", data: userData, access_token , refresh_token});
 
     console.log(userData);
   } catch (err) {
@@ -87,13 +92,13 @@ router.post("/driver/login/email", async (req, res) => {
     }
     const driverData = await loginDriverEmail(data);
 
-    const access_token = generateAccessToken(driverData.DriverID, "Driver")
-    const refresh_token = generateRefreshToken(driverData.DriverID, "Driver")
+    const access_token = generateAccessToken(driverData.DriverID, "Driver");
+    const refresh_token = generateRefreshToken(driverData.DriverID, "Driver");
 
     res
       .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200).send({ message: "Login Successfull!", data: driverData, access_token });
-
+      .status(200)
+      .send({ message: "Login Successfull!", data: driverData, access_token });
   } catch (err) {
     console.log(err);
     res.status(401).send({ message: "Login  Failed!", receivedData: null });
@@ -108,19 +113,18 @@ router.post("/driver/login/phone", async (req, res) => {
     }
     const driverData = await loginDriverPhone(data);
 
-    const access_token = generateAccessToken(driverData.DriverID, "Driver")
-    const refresh_token = generateRefreshToken(driverData.DriverID, "Driver")
+    const access_token = generateAccessToken(driverData.DriverID, "Driver");
+    const refresh_token = generateRefreshToken(driverData.DriverID, "Driver");
 
     res
       .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200).send({ message: "Login Successfull!", data: driverData, access_token });
-
+      .status(200)
+      .send({ message: "Login Successfull!", data: driverData, access_token });
   } catch (err) {
     console.log(err);
     res.status(401).send({ message: "Login  Failed!", receivedData: null });
   }
 });
-
 
 router.post("/driver/signup", async (req, res) => {
   try {
@@ -138,14 +142,13 @@ router.post("/driver/signup", async (req, res) => {
     }
     const driverData = await createDriver(data);
 
-    const access_token = generateAccessToken(driverData.driverId, "Driver")
-    const refresh_token = generateRefreshToken(driverData.driverId, "Driver")
+    const access_token = generateAccessToken(driverData.driverId, "Driver");
+    const refresh_token = generateRefreshToken(driverData.driverId, "Driver");
 
     res
       .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200).send({ message: "Signup Successful!", data: driverData, access_token });
-
-
+      .status(200)
+      .send({ message: "Signup Successful!", data: driverData, access_token });
   } catch (err) {
     if (err.message === "Driver already exists.") {
       return res
@@ -173,28 +176,26 @@ router.post("/create_vehicle", validateToken, async (req, res) => {
 });
 
 
-router.get("/refresh_token", async (req, res) => {
+
+router.post("/refresh_token", async (req, res) => {
   try {
+    const refresh_token = req.body.refresh_token; // extract refresh token
 
-    const refresh_token = req.cookies.refreshToken
-
-    const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN)
-    if (decoded) {
+    const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN); // verify
+    if (decoded) { 
       const id = decoded.id;
       const role = decoded.role;
 
-      const access_token = generateAccessToken(id, role)
-      res.status(200).send({ access_token });
-    }
-    else {
+      const access_token = generateAccessToken(id, role); 
+
+
+      res.status(200).send({ access_token }); // if verified send access token
+    } else {
       return res.status(403).json({ message: "Unauthorized" });
     }
   } catch (err) {
-
-    res
-      .status(500)
-      .send({ message: "An Error Occured!" });
+    res.status(500).send({ message: "An Error Occured!" });
   }
-})
+});
 
 module.exports = router;
