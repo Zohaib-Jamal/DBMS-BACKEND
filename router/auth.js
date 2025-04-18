@@ -42,15 +42,12 @@ router.post("/user/signup", async (req, res) => {
     const access_token = generateAccessToken(userid, "User");
     const refresh_token = generateRefreshToken(userid, "User");
 
-    
-    res
-      .status(200)
-      .send({
-        message: "Signup successful!",
-        data,
-        access_token,
-        refresh_token,
-      });
+    res.status(200).send({
+      message: "Signup successful!",
+      data,
+      access_token,
+      refresh_token,
+    });
   } catch (err) {
     if (err.message === "User already exists.") {
       return res
@@ -64,7 +61,7 @@ router.post("/user/signup", async (req, res) => {
 
 router.post("/user/login", async (req, res) => {
   try {
-    const data = req.body; 
+    const data = req.body;
 
     if (!data.email || !data.password) {
       return res.status(400).send({ message: "Missing required fields" });
@@ -75,7 +72,14 @@ router.post("/user/login", async (req, res) => {
     const access_token = generateAccessToken(userData.UserID, "User");
     const refresh_token = generateRefreshToken(userData.UserID, "User");
 
-    res.status(200).send({ message: "Login Successfull!", data: userData, access_token , refresh_token});
+    res
+      .status(200)
+      .send({
+        message: "Login Successfull!",
+        data: userData,
+        access_token,
+        refresh_token,
+      });
 
     console.log(userData);
   } catch (err) {
@@ -86,6 +90,7 @@ router.post("/user/login", async (req, res) => {
 
 router.post("/driver/login/email", async (req, res) => {
   try {
+    console.log("drive logging")
     const data = req.body;
     if (!data.email || !data.password) {
       return res.status(400).send({ message: "Missing required fields" });
@@ -96,9 +101,8 @@ router.post("/driver/login/email", async (req, res) => {
     const refresh_token = generateRefreshToken(driverData.DriverID, "Driver");
 
     res
-      .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200)
-      .send({ message: "Login Successfull!", data: driverData, access_token });
+     
+      .send({ message: "Login Successfull!", data: driverData, access_token,refresh_token });
   } catch (err) {
     console.log(err);
     res.status(401).send({ message: "Login  Failed!", receivedData: null });
@@ -175,21 +179,18 @@ router.post("/create_vehicle", validateToken, async (req, res) => {
   }
 });
 
-
-
 router.post("/refresh_token", async (req, res) => {
   try {
-    const refresh_token = req.body.refresh_token; // extract refresh token
+    const refresh_token = req.body.refresh_token; 
 
-    const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN); // verify
-    if (decoded) { 
+    const decoded = jwt.verify(refresh_token, process.env.REFRESH_TOKEN); 
+    if (decoded) {
       const id = decoded.id;
       const role = decoded.role;
 
-      const access_token = generateAccessToken(id, role); 
-
-
-      res.status(200).send({ access_token }); // if verified send access token
+      const access_token = generateAccessToken(id, role);
+      console.log("role",  role )
+      res.status(200).send({ access_token, role });
     } else {
       return res.status(403).json({ message: "Unauthorized" });
     }

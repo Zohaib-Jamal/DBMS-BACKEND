@@ -14,6 +14,7 @@ io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
   const token = socket.handshake.query.token;
+  console.log(token)
 
   if (!token) {
     console.log("No token provided, disconnecting...");
@@ -47,9 +48,10 @@ io.on("connection", (socket) => {
 
   socket.on("createRide", (rideData) => {
     const { userID, pickup, destination, fare } = rideData;
+    
     activeRides[userID] = { userID, pickup, destination, status: "waiting", fare };
-
-
+    
+    console.log("activeRides",activeRides)
     Object.values(drivers).forEach((driverSocketId) => {
       io.to(driverSocketId).emit("newRideRequest", activeRides[userID]);
     });

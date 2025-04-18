@@ -16,6 +16,8 @@ const validateToken = async (req, res, next) => {
         if (decoded) {
             req.id = decoded.id
             req.role = decoded.role
+
+            console.log("mid role",req.role)
             next()
         }
         else {

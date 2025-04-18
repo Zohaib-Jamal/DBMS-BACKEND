@@ -31,6 +31,7 @@ const getDriver = async (data) => {
       `SELECT DriverId, firstName, lastName, rating, phoneNumber, email, dob  FROM Driver WHERE DriverID = '${driverID}'`
     );
     const driverdata = snap.recordset[0];
+    console.log(driverdata)
     if (!driverdata) throw new Error("Could not Find Driver");
     else return driverdata;
   } catch (err) {
