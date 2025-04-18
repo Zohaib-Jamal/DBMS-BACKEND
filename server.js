@@ -11,13 +11,13 @@ const userRouter = require("./router/user.js")
 const rideRouter = require("./router/ride.js")
 const { Server } = require("socket.io");
 const http = require("http");
-const cookieParser = require('cookie-parser');
+//const cookieParser = require('cookie-parser');
 
 connectDB();
 
 app.use(cors());
 app.use(express.json());
-app.use(cookieParser());
+//app.use(cookieParser());
 
 const server = http.createServer(app);
 

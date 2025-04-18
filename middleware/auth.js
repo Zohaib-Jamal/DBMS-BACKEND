@@ -8,6 +8,7 @@ HEADERS{
 */
 const validateToken = async (req, res, next) => {
     try {
+        console.log("middle")
         if (!req.headers.authorization) throw new Error("invalid token")
         const token = req.headers.authorization.split(" ")[1]
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN)

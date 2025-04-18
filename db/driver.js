@@ -142,6 +142,21 @@ const GetDriverHistory = async (data) => {
   }
 };
 
+const GetDriverRides = async (data) => {
+  try {
+    const { driverID } = data;
+    const snap = await sql.query(
+      `SELECT count(*) as Rides FROM Ride where DriverID = '${driverID}'`
+    );
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset;
+  } catch (Err) {
+
+    throw new Error(Err.message);
+  }
+};
+
 module.exports = {
   createDriver,
   loginDriverEmail,
@@ -151,5 +166,6 @@ module.exports = {
   ChangeDriverPassword,
   checkDriver,
   getDriver,
-  GetDriverHistory
+  GetDriverHistory,
+  GetDriverRides
 };

@@ -6,14 +6,15 @@ const {
   GetUserBusses,
   GetUserRides,
   ChangeUserPassword,
+  getUserData,
 } = require("../db/user.js");
-const { validateToken } = require("../middleware/auth.js")
-router.use(validateToken)
+const { validateToken } = require("../middleware/auth.js");
+router.use(validateToken);
 
 router.put("/change/name", async (req, res) => {
   try {
     const data = req.body;
-    data.userId = req.id
+    data.userId = req.id;
     if (!data.firstName || !data.lastName || !data.userId) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -32,7 +33,7 @@ router.put("/change/phone", async (req, res) => {
   try {
     const data = req.body;
 
-    data.userId = req.id
+    data.userId = req.id;
     if (!data.phoneNumber || !data.userId) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -50,7 +51,7 @@ router.put("/change/phone", async (req, res) => {
 router.put("/change/password", async (req, res) => {
   try {
     const data = req.body;
-    data.userId = req.id
+    data.userId = req.id;
     if (!data.password || !data.userId) {
       return res.status(400).send({ message: "Missing required fields" });
     }
@@ -67,30 +68,41 @@ router.put("/change/password", async (req, res) => {
 
 router.get("/buses", async (req, res) => {
   try {
-    const data = { userId: req.id }
+    const data = { userId: req.id };
     const recievedData = await GetUserBusses(data);
 
     res.status(200).send({ message: "User Busses Sent", data: recievedData });
   } catch (err) {
     if (err.message === "No record found!")
-      return res
-        .status(404)
-        .send({ message: err.message, data: null });
+      return res.status(404).send({ message: err.message, data: null });
     res.status(500).send({ message: "Req Failed!", data: null });
   }
 });
 
 router.get("/rides", async (req, res) => {
   try {
-    const data = { userId: req.id }
+    const data = { userId: req.id };
     const recievedData = await GetUserRides(data);
 
     res.status(200).send({ message: "User Rides Sent", data: recievedData });
   } catch (err) {
     if (err.message === "No record found!")
-      return res
-        .status(404)
-        .send({ message: err.message, data: null });
+      return res.status(404).send({ message: err.message, data: null });
+    res.status(500).send({ message: "Req Failed!", data: null });
+  }
+});
+
+router.get("/data", async (req, res) => {
+  try {
+    console.log("here")
+    const recievedData = await getUserData(req.id);
+  
+    res.status(200).send({ message: "User Rides Sent", data: recievedData });
+  } catch (err) {
+    if (err.message === "No record found!")
+      return res.status(404).send({ message: err.message, data: null });
+
+    
     res.status(500).send({ message: "Req Failed!", data: null });
   }
 });

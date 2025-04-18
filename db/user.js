@@ -22,6 +22,24 @@ const loginUser = async (data) => {
   }
 };
 
+const getUserData = async (id)=>{
+  try {
+    
+    const snap = await sql.query(
+      `SELECT * FROM USERS WHERE UserID = '${id}'`
+    );
+    console.log(snap.recordset)
+    if (!snap.recordset[0]) throw new Error("No record found!");
+
+    const userData = snap.recordset[0];
+
+    return userData;
+  } catch (err) {
+
+    throw Error(err);
+  }
+}
+
 
 const createUser = async (data) => {
   try {
@@ -125,5 +143,6 @@ module.exports = {
   ChangeUsername,
   GetUserRides,
   GetUserBusses,
-  ChangeUserPassword
+  ChangeUserPassword,
+  getUserData
 }

@@ -97,4 +97,20 @@ router.get("/history", async (req, res) => {
   }
 });
 
+router.get("/RideCount", async (req, res) => {
+  try {
+    const data = { driverID: req.id }
+    const recievedData = await GetDriverRides(data);
+    res.status(200).send({ message: "Rides count Sent", data: recievedData });
+  } catch (err) {
+    if (err.message === "No record found!")
+      return res
+        .status(404)
+        .send({ message: err.message, data: null });
+    res
+      .status(500)
+      .send({ message: "Data Req Failed!", data: null });
+  }
+});
+
 module.exports = router
