@@ -4,13 +4,14 @@ const {
   createVehicle,
   getVehicle,
   deleteVehicle,
-} = require("../db/driver.js");
+} = require("../db/vehicle.js");
 const { validateToken } = require("../middleware/auth.js")
 router.use(validateToken)
 
 router.post("/", async (req, res) => {
   try {
     const data = req.body;
+    data.driverID = req.id
     if (!data.driverID || !data.vehicleType || !data.plateNo || !data.model) {
       return res.status(400).send({ message: "Missing required fields" });
     }

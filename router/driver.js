@@ -84,7 +84,9 @@ router.get("/details", async (req, res) => {
 router.get("/history", async (req, res) => {
   try {
     const data = { driverID: req.id }
+ 
     const recievedData = await GetDriverHistory(data);
+   
     res.status(200).send({ message: "History Sent", data: recievedData });
   } catch (err) {
     if (err.message === "No record found!")

@@ -9,6 +9,7 @@ const companyRouter = require("./router/company.js")
 const driverRouter = require("./router/driver.js")
 const userRouter = require("./router/user.js")
 const rideRouter = require("./router/ride.js")
+const vehicleRouter = require("./router/vehicle.js")
 const { Server } = require("socket.io");
 const http = require("http");
 //const cookieParser = require('cookie-parser');
@@ -35,6 +36,7 @@ app.use("/ride", rideRouter)
 app.use("/company", companyRouter)
 app.use("/driver", driverRouter)
 app.use("/user", userRouter)
+app.use("/vehicle", vehicleRouter)
 
 
 app.get("/", (req, res) => {

@@ -12,7 +12,7 @@ require("dotenv").config();
 const { validateToken } = require("../middleware/auth.js");
 
 const generateAccessToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.ACCESS_TOKEN, { expiresIn: "10m" });
+  return jwt.sign({ id, role }, process.env.ACCESS_TOKEN, { expiresIn: "1d" });
 };
 
 const generateRefreshToken = (id, role) => {
@@ -36,7 +36,7 @@ router.post("/user/signup", async (req, res) => {
       return res.status(400).send({ message: "Missing required fields" });
     }
 
-    console.log("data: ", data);
+   
     const userid = await createUser(data);
 
     const access_token = generateAccessToken(userid, "User");
@@ -81,7 +81,7 @@ router.post("/user/login", async (req, res) => {
         refresh_token,
       });
 
-    console.log(userData);
+   
   } catch (err) {
     ///console.log(err);
     res.status(401).send({ message: err.message, receivedData: null });
@@ -189,7 +189,7 @@ router.post("/refresh_token", async (req, res) => {
       const role = decoded.role;
 
       const access_token = generateAccessToken(id, role);
-      console.log("role",  role )
+     
       res.status(200).send({ access_token, role });
     } else {
       return res.status(403).json({ message: "Unauthorized" });

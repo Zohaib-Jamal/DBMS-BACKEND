@@ -94,7 +94,7 @@ router.get("/rides", async (req, res) => {
 
 router.get("/data", async (req, res) => {
   try {
-    console.log("here")
+  
     const recievedData = await getUserData(req.id);
   
     res.status(200).send({ message: "User Rides Sent", data: recievedData });

@@ -10,6 +10,7 @@ const createVehicle = async (data) => {
     );
     console.log(snap);
   } catch (Err) {
+    console.log(Err)
     if (Err.number === 2627) {
       throw new Error("Vehicle already exists.");
     }

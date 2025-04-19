@@ -130,15 +130,17 @@ const ChangeDriverPassword = async (data) => {
 const GetDriverHistory = async (data) => {
   try {
     const { driverID } = data;
+    
     const snap = await sql.query(
-      `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, Rating
+      `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, DriverRating
       FROM Ride where DriverID = '${driverID}'`
     );
+    
     if (!snap.recordset[0])
       throw new Error("No record found!");
     return snap.recordset;
   } catch (Err) {
-
+   
     throw new Error(Err.message);
   }
 };
