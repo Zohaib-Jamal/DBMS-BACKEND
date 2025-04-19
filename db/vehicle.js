@@ -33,6 +33,22 @@ const getVehicle = async (data) => {
   }
 };
 
+const getVehicleByDriver = async (data) => {
+  try {
+    const { id } = data;
+
+    const snap = await sql.query(
+      `SELECT PlateNo, Model,VehicleID,VehicleType FROM Vehicle JOIN DRIVER ON Vehicle.DriverID = DRIVER.DriverID  WHERE '${id}' = DRIVER.DriverID `
+    );
+    if (!snap.recordset[0])
+      throw new Error("No record found!");
+    return snap.recordset[0];
+  } catch (Err) {
+    console.log(Err)
+    throw new Error("Could not Find Vehicle");
+  }
+};
+
 const deleteVehicle = async (data) => {
   try {
     const { vehicleID } = data;
@@ -49,4 +65,5 @@ module.exports = {
   createVehicle,
   getVehicle,
   deleteVehicle,
+  getVehicleByDriver
 };

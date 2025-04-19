@@ -4,6 +4,7 @@ const {
   createVehicle,
   getVehicle,
   deleteVehicle,
+  getVehicleByDriver
 } = require("../db/vehicle.js");
 const { validateToken } = require("../middleware/auth.js")
 router.use(validateToken)
@@ -22,6 +23,22 @@ router.post("/", async (req, res) => {
     res
       .status(500)
       .send({ message: "Vehicle Failed!", receivedData: null });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    
+    const id = req.id
+    const data = await getVehicleByDriver({id});
+    console.log("data", data)
+    res.status(200).send({ message: "Driver Details Received", data: data });
+  } catch (err) {
+    if (err.message === "No record found!")
+      return res.status(404).send({ message: err.message, data: null });
+    res
+      .status(500)
+      .send({ message: "Driver Details Req Failed!", data: null });
   }
 });
 

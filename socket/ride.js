@@ -97,13 +97,13 @@ io.on("connection", (socket) => {
     } catch (err) {}
   });
 
-  socket.on("cancelRide", async ({ userID, driverID, rideID }) => {
+  socket.on("cancelRide", async ({ userID, driverID }) => {
     if (activeRides[userID]) {
       try {
         delete activeRides[userID];
         io.to(users[userID]).emit("rideCancelled");
         io.to(drivers[driverID]).emit("rideCancelled");
-        await cancelRide(rideID);
+        await cancelRide( activeRides[userID].rideID);
       } catch (err) {}
     }
   });
