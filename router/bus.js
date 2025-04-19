@@ -70,10 +70,12 @@ router.delete("/cancel", async (req, res) => {
 
 router.get("/available", async (req, res) => {
   try {
+    console.log("ava", req.query.journeyID)
     const data = { journeyID: req.query.journeyID }
     if (!data.journeyID)
       return res.status(400).send({ message: "Missing required fields" });
     const receivedData = await AvailableSeats(data);
+    console.log("re", receivedData)
     res.status(200).send({ message: "Seats Sent", data: receivedData });
   } catch (err) {
 

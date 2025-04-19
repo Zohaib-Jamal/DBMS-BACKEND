@@ -15,7 +15,8 @@ const LocationBusses = async (data) => {
     const { departureLocation, arrivalLocation } = data;
 
     const snap = await sql.query(
-      `SELECT DepartureLocation, ArrivalLocation, StartTime, Fare,STATUS FROM BusJourney
+      `SELECT JourneyID, DepartureLocation, ArrivalLocation, StartTime, Fare,STATUS ,COMPANY.Name FROM BusJourney JOIN BUS ON BUS.BusID=BusJourney.BusID
+      JOIN company ON company.CompanyID=BUS.CompanyID
             WHERE DepartureLocation = '${departureLocation}' and ArrivalLocation = '${arrivalLocation}' and StartTime > GETDATE()`
     );
     if (!snap.recordset[0]) throw new Error("No record found!");

@@ -52,6 +52,7 @@ const CancelSeat = async (data) => {
 const AvailableSeats = async (data) => {
     try {
         const { journeyID } = data;
+        console.log("id", journeyID)
         const snap = await sql.query(
             `EXEC getAvailableSeats @journey_id = ${journeyID}`
         )

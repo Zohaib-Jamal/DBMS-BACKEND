@@ -30,7 +30,9 @@ router.get("/location", async (req, res) => {
   try {
     const data = { departureLocation: req.query.departure, arrivalLocation: req.query.arrival }
     const recievedData = await LocationBusses(data);
+    console.log("bus", recievedData)
     res.status(200).send({ message: "Busses Sent", data: recievedData });
+    //console.log()
   } catch (err) {
     console.log(err)
     if (err.message === "No record found!") {
@@ -52,6 +54,7 @@ router.get("/bus", async (req, res) => {
       companyID: req.query.cid
     }
     const busdata = await CompanyBusses(data);
+    console.log("bus", busdata)
     res.status(200).send({ message: "Busses Sent", data: busdata });
   } catch (err) {
     console.log(err);
