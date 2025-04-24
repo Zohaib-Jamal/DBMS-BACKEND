@@ -13,7 +13,7 @@ const loginUser = async (data) => {
 
     const userData = snap.recordset[0];
 
-    const correct = await bcrypt.compareSync(password, userData.password);
+    const correct = bcrypt.compareSync(password, userData.password);
     if (!correct) throw new Error("Wrong Password");
     return userData;
   } catch (err) {
@@ -91,7 +91,7 @@ const GetUserRides = async (data) => {
     const { userId } = data;
     const snap = await sql.query(
       `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate
-      FROM Ride where PassengerID = '${userId}'`
+      FROM Ride where PassengerID = '${userId}' and ridestatus='Completed'`
     );
     if (!snap.recordset[0])
       throw new Error("No record found!");

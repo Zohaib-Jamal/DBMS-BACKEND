@@ -6,6 +6,8 @@ HEADERS{
     authorization: "BEARER eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOiIxMjM0NTY3ODkwIiwicm9sZSI6IlVzZXIiLCJpYXQiOjE1MTYyMzkwMjJ9.HEo0xyLW_XYOLqszXq-lJUGsXvhTXDO67sVM0W3TX6k"
 }
 */
+
+
 const validateToken = async (req, res, next) => {
   try {
     if (!req.headers.authorization) throw new Error("invalid token");
@@ -13,10 +15,13 @@ const validateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN);
 
     if (decoded) {
+
       req.id = decoded.id;
       req.role = decoded.role;
 
       next();
+
+      
     } else {
       return res.status(403).json({ message: "Unauthorized" });
     }

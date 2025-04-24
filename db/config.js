@@ -1,7 +1,4 @@
-const { query } = require("express");
 const sql = require("mssql");
-const { v4: uuidv4 } = require("uuid");
-const { bcrypt } = require("bcrypt");
 
 const sqlConfig = {
   user: "express_user",

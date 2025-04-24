@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require("uuid");
 const bcrypt = require("bcrypt");
 
 
-// Driver related functions
+
 const createDriver = async (data) => {
   try {
     const { firstName, lastName, email, cnic, password, phoneNumber, dob } = data;
@@ -133,7 +133,7 @@ const GetDriverHistory = async (data) => {
     
     const snap = await sql.query(
       `SELECT DepartureLocation, ArrivalLocation, Fare, StartTime, RideDate, DriverRating
-      FROM Ride where DriverID = '${driverID}'`
+      FROM Ride where DriverID = '${driverID}'and ridestatus='Completed'`
     );
     
     if (!snap.recordset[0])

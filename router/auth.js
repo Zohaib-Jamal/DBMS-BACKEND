@@ -11,15 +11,20 @@ var jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { validateToken } = require("../middleware/auth.js");
 
+
+
 const generateAccessToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.ACCESS_TOKEN, { expiresIn: "1d" });
 };
 
+
 const generateRefreshToken = (id, role) => {
   return jwt.sign({ id, role }, process.env.REFRESH_TOKEN, {
     expiresIn: "30d",
-  });
+});
 };
+
+
 
 router.post("/user/signup", async (req, res) => {
   try {
@@ -48,6 +53,8 @@ router.post("/user/signup", async (req, res) => {
       access_token,
       refresh_token,
     });
+
+    
   } catch (err) {
     if (err.message === "User already exists.") {
       return res
@@ -149,10 +156,8 @@ router.post("/driver/signup", async (req, res) => {
     const access_token = generateAccessToken(driverData.driverId, "Driver");
     const refresh_token = generateRefreshToken(driverData.driverId, "Driver");
 
-    res
-      .cookie("refreshToken", refresh_token, { httpOnly: true })
-      .status(200)
-      .send({ message: "Signup Successful!", data: driverData, access_token });
+    res.status(200)
+      .send({ message: "Signup Successful!", data: driverData, access_token,refresh_token });
   } catch (err) {
     if (err.message === "Driver already exists.") {
       return res

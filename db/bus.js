@@ -4,9 +4,9 @@ const ReservationData = async (data) => {
     try {
         const { userId } = data;
         const snap = await sql.query(
-            `SELECT SeatNumber, DepartureLocation, ArrivalLocation,StartTime, Fare From BusSeat BS
+            `SELECT SeatID,SeatNumber, DepartureLocation, ArrivalLocation,StartTime, Fare From BusSeat BS
             JOIN BusJourney BJ ON BS.JourneyID = BJ.JourneyID
-            WHERE PassengerID = '${userId}' and Status = 'Pending'`
+            WHERE PassengerID = '${userId}' and Status = 'Available'`
         )
         if (!snap.recordset[0])
             throw new Error("No record found!");

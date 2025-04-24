@@ -54,6 +54,7 @@ router.post("/reserve", async (req, res) => {
 
 router.delete("/cancel", async (req, res) => {
   try {
+    console.log("cancel sear")
     const data = req.body;
     if (!data.seatID)
       return res.status(400).send({ message: "Missing required fields" });

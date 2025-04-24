@@ -2,7 +2,8 @@ const { sql } = require("./config.js");
 
 const AllCompanies = async (data) => {
   try {
-    const snap = await sql.query(`SELECT Name FROM Company`);
+    const snap = await sql.query(`SELECT Name,Image FROM Company`);
+    console.log(snap.recordset)
     if (!snap.recordset[0]) throw new Error("No record found!");
     return snap.recordset;
   } catch (err) {
@@ -17,7 +18,7 @@ const LocationBusses = async (data) => {
     const snap = await sql.query(
       `SELECT JourneyID, DepartureLocation, ArrivalLocation, StartTime, Fare,STATUS ,COMPANY.Name FROM BusJourney JOIN BUS ON BUS.BusID=BusJourney.BusID
       JOIN company ON company.CompanyID=BUS.CompanyID
-            WHERE DepartureLocation = '${departureLocation}' and ArrivalLocation = '${arrivalLocation}' and StartTime > GETDATE()`
+            WHERE DepartureLocation = '${departureLocation}' and ArrivalLocation = '${arrivalLocation}' and StartTime > GETDATE() AND STATUS='Available'`
     );
     if (!snap.recordset[0]) throw new Error("No record found!");
     return snap.recordset;
